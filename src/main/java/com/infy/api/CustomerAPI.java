@@ -2,12 +2,16 @@ package com.infy.api;
 
 import java.util.List;
 
-import javax.validation.Valid;
 
+import com.infy.exception.InfyBankException;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,6 +26,7 @@ import com.infy.service.CustomerService;
 
 @RestController
 @RequestMapping(value = "/infybank")
+@Validated
 public class CustomerAPI {
 
 	@Autowired
@@ -31,19 +36,19 @@ public class CustomerAPI {
 	private Environment environment;
 
 	@GetMapping(value = "/customers")
-	public ResponseEntity<List<CustomerDTO>> getAllCustomerDetails() throws Exception {
+	public ResponseEntity<List<CustomerDTO>> getAllCustomerDetails() throws InfyBankException {
 		List<CustomerDTO> customerList = customerService.getAllCustomers();
 		return  new ResponseEntity<>(customerList, HttpStatus.OK);
 	}
 
 	@GetMapping(value = "/customers/{customerId}")
-	public ResponseEntity<CustomerDTO> getCustomerDetails(@PathVariable Integer customerId) throws Exception {
+	public ResponseEntity<CustomerDTO> getCustomerDetails(@PathVariable @Min(value = 1, message = "{customer.customerid.invalid}") @Max(value = 100, message = "{customer.customerid.invalid}") Integer customerId) throws InfyBankException {
 		CustomerDTO customer = customerService.getCustomer(customerId);
 		return new ResponseEntity<>(customer, HttpStatus.OK);
 	}
 
 	@PostMapping(value = "/customers")
-	public ResponseEntity<String> addCustomer(@Valid @RequestBody CustomerDTO customerDTO) throws Exception {
+	public ResponseEntity<String> addCustomer(@Valid @RequestBody CustomerDTO customerDTO) throws InfyBankException {
 		Integer customerId = customerService.addCustomer(customerDTO);
 		String successMessage = environment.getProperty("API.INSERT_SUCCESS") + customerId;
 		return new ResponseEntity<>(successMessage, HttpStatus.CREATED);
@@ -51,14 +56,14 @@ public class CustomerAPI {
 
 	@PutMapping(value = "/customers/{customerId}")
 	public ResponseEntity<String> updateCustomer(@PathVariable Integer customerId, @RequestBody CustomerDTO customer)
-			throws Exception {
+			throws InfyBankException {
 		customerService.updateCustomer(customerId, customer.getEmailId());
 		String successMessage = environment.getProperty("API.UPDATE_SUCCESS");
 		return new ResponseEntity<>(successMessage, HttpStatus.OK);
 	}
 
 	@DeleteMapping(value = "/customers/{customerId}")
-	public ResponseEntity<String> deleteCustomer(@PathVariable Integer customerId) throws Exception {
+	public ResponseEntity<String> deleteCustomer(@PathVariable Integer customerId) throws InfyBankException {
 		customerService.deleteCustomer(customerId);
 		String successMessage = environment.getProperty("API.DELETE_SUCCESS");
 		return new ResponseEntity<>(successMessage, HttpStatus.OK);

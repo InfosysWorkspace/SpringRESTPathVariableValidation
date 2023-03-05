@@ -68,10 +68,10 @@ public class CustomerServiceImpl implements CustomerService {
 			cust.setCustomerId(customer.getCustomerId());
 			cust.setDateOfBirth(customer.getDateOfBirth());
 			cust.setEmailId(customer.getEmailId());
-			customerDTO.setName(customer.getName());
+			cust.setName(customer.getName());
 			
 
-			customerDTOs.add(customerDTO);
+			customerDTOs.add(cust);
 		});
 		if (customerDTOs.isEmpty())
 			throw new InfyBankException("Service.CUSTOMERS_NOT_FOUND");
